@@ -1,5 +1,4 @@
 #include "Position.h"
-#include <iostream>
 
 int main() {
     Position board{};
