@@ -25,9 +25,9 @@ private:
 
     Colour side_to_move{};
     CastlingRights castling_rights{};
-    Square en_passant_square{};
+    Square ep_square{};
     int halfmove_clock{};
-
+    int fullmove_count{};
 };
 
 inline Bitboard Position::getPieces() const {

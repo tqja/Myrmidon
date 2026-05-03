@@ -23,7 +23,7 @@ enum PieceType : std::uint8_t {
 };
 // clang-format on
 
-inline PieceType getPieceType(char c) {
+inline PieceType getPieceType(unsigned char c) {
   switch (static_cast<char>(std::tolower(c))) {
   case 'p':
     return PAWN;
@@ -59,6 +59,12 @@ enum Square : std::uint8_t {
   SQ_NB = 64
 };
 // clang-format on
+
+inline std::string squareToString(const Square sq) {
+  char file = static_cast<char>('a' + (sq % 8));
+  char rank = static_cast<char>('1' + (sq / 8));
+  return {file, rank};
+}
 
 enum File : std::uint8_t {
   FILE_A,
@@ -126,5 +132,34 @@ enum CastlingRights : std::uint8_t {
 
   CASTLING_RIGHT_NB = 16
 };
+
+inline std::string castlingToString(const CastlingRights cr) {
+  if (cr == NO_CASTLING)
+    return "-";
+  std::string result{};
+  if (cr & WHITE_OO) {
+    result += 'K';
+  }
+  if (cr & WHITE_OOO) {
+    result += 'Q';
+  }
+  if (cr & BLACK_OO) {
+    result += 'k';
+  }
+  if (cr & BLACK_OOO) {
+    result += 'q';
+  }
+  return result;
+}
+
+constexpr CastlingRights operator|(const CastlingRights a,
+                                   const CastlingRights b) {
+  return static_cast<CastlingRights>(static_cast<int>(a) | static_cast<int>(b));
+}
+
+constexpr CastlingRights &operator|=(CastlingRights &a,
+                                     const CastlingRights b) {
+  return a = a | b;
+}
 
 #endif // CHESS_ENGINE_TYPES_H
