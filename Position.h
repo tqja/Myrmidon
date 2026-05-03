@@ -1,7 +1,3 @@
-//
-// Created by tja on 28/04/2026.
-//
-
 #ifndef CHESS_ENGINE_BOARD_H
 #define CHESS_ENGINE_BOARD_H
 #include "types.h"
