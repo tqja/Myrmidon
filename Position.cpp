@@ -28,7 +28,7 @@ void Position::print() const {
   std::cout << "   a b c d e f g h\n\n";
   std::cout << "Side to move:      "
             << (side_to_move == WHITE ? "White" : "Black") << "\n";
-  std::cout << "Castling rights:   " << castling_rights << '\n';
+  std::cout << "Castling rights:   " << castlingToString(castling_rights) << '\n';
   std::cout << "En passant square: "
             << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << '\n';
   std::cout << "Halfmove clock:    " << halfmove_clock << '\n';
