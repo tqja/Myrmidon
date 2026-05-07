@@ -7,6 +7,7 @@
 #include <ostream>
 
 using Bitboard = std::uint64_t;
+using Key = std::uint64_t;
 
 constexpr char piece_chars[2][7] = {
     {'P', 'N', 'B', 'R', 'Q', 'K', '.'}, // white

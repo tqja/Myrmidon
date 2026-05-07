@@ -19,6 +19,10 @@ public:
     Bitboard getPieces(Colour colour) const;
     Bitboard getPieces(PieceType piece_type, Colour colour) const;
 
+    Colour getSide() const { return side_to_move; }
+    CastlingRights getCastleRights() const { return castling_rights; }
+    Square getEp() const { return ep_square; }
+
 private:
     std::array<Piece, SQ_NB> board{};
     std::array<Bitboard, PIECE_TYPE_NB> by_type{};
