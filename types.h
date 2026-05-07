@@ -21,29 +21,43 @@ enum PieceType : std::uint8_t {
   PIECE_TYPE_NB,
   NO_PIECE_TYPE = PIECE_TYPE_NB
 };
-// clang-format on
 
-inline PieceType getPieceType(unsigned char c) {
-  switch (static_cast<char>(std::tolower(c))) {
-  case 'p':
-    return PAWN;
-  case 'n':
-    return KNIGHT;
-  case 'b':
-    return BISHOP;
-  case 'r':
-    return ROOK;
-  case 'q':
-    return QUEEN;
-  case 'k':
-    return KING;
-  default:
-    std::cerr << c << " is not a valid piece type." << std::endl;
-    assert(false);
-  }
+// used for mailbox board
+enum Piece : std::uint8_t {
+  NO_PIECE, W_PAWN, W_KNIGHT, W_BISHOP, W_ROOK, W_QUEEN, W_KING,
+  B_PAWN = W_PAWN + 8, B_KNIGHT, B_BISHOP, B_ROOK, B_QUEEN, B_KING,
+  PIECE_NB = 16
+};
+
+inline PieceType charToPieceType(const unsigned char c) {
+  switch (std::tolower(c)) {
+    case 'p': return PAWN;
+    case 'n': return KNIGHT;
+    case 'b': return BISHOP;
+    case 'r': return ROOK;
+    case 'q': return QUEEN;
+    case 'k': return KING;
+    default:
+      std::cerr << c << " is not a valid piece type." << std::endl;
+      assert(false);
+    }
 }
 
-// clang-format off
+inline Piece charToPiece(const unsigned char c) {
+  Piece piece;
+  switch (std::tolower(c)) {
+    case 'p': piece = W_PAWN; break;
+    case 'n': piece = W_KNIGHT; break;
+    case 'b': piece = W_BISHOP; break;
+    case 'r': piece = W_ROOK; break;
+    case 'q': piece = W_QUEEN; break;
+    case 'k': piece = W_KING; break;
+    default: return NO_PIECE;
+  }
+
+  return std::isupper(c) ? static_cast<Piece>(piece + 8) : piece;
+}
+
 enum Square : std::uint8_t {
   SQ_A1, SQ_B1, SQ_C1, SQ_D1, SQ_E1, SQ_F1, SQ_G1, SQ_H1,
   SQ_A2, SQ_B2, SQ_C2, SQ_D2, SQ_E2, SQ_F2, SQ_G2, SQ_H2,
@@ -89,6 +103,10 @@ enum Rank : std::uint8_t {
   RANK_8,
   RANK_NB
 };
+
+inline Square makeSquare(const File f, const Rank r) {
+  return static_cast<Square>(f + r * 8);
+}
 
 #define ENABLE_INCR_OPERATORS_ON(T)                                            \
   constexpr T &operator++(T &d) {                                              \

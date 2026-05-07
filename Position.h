@@ -9,15 +9,20 @@ public:
     void print() const;
 
     void set(const std::string& fen);
+    std::string fen() const;
 
-    [[nodiscard]] Bitboard getPieces() const;
-    [[nodiscard]] Bitboard getPieces(PieceType piece_type) const;
-    [[nodiscard]] Bitboard getPieces(Colour colour) const;
-    [[nodiscard]] Bitboard getPieces(PieceType piece_type, Colour colour) const;
+    bool empty(Square square) const;
+    inline Piece pieceOn(Square square) const;
+
+    Bitboard getPieces() const;
+    Bitboard getPieces(PieceType piece_type) const;
+    Bitboard getPieces(Colour colour) const;
+    Bitboard getPieces(PieceType piece_type, Colour colour) const;
 
 private:
-    Bitboard by_type[6]{};
-    Bitboard by_colour[2]{};
+    std::array<Piece, SQ_NB> board{};
+    std::array<Bitboard, PIECE_TYPE_NB> by_type{};
+    std::array<Bitboard, COLOUR_NB> by_colour{};
 
     Colour side_to_move{};
     CastlingRights castling_rights{};

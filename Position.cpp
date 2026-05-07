@@ -28,7 +28,8 @@ void Position::print() const {
   std::cout << "   a b c d e f g h\n\n";
   std::cout << "Side to move:      "
             << (side_to_move == WHITE ? "White" : "Black") << "\n";
-  std::cout << "Castling rights:   " << castlingToString(castling_rights) << '\n';
+  std::cout << "Castling rights:   " << castlingToString(castling_rights)
+            << '\n';
   std::cout << "En passant square: "
             << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << '\n';
   std::cout << "Halfmove clock:    " << halfmove_clock << '\n';
@@ -51,8 +52,9 @@ void Position::set(const std::string &fen) {
       sq += piece - '0';
     } else {
       const Colour colour = std::isupper(piece) ? WHITE : BLACK;
+      board[sq] = charToPiece(piece);
       by_colour[colour] |= 1ULL << sq;
-      by_type[getPieceType(piece)] |= 1ULL << sq;
+      by_type[charToPieceType(piece)] |= 1ULL << sq;
       sq++;
     }
   }
@@ -91,10 +93,66 @@ void Position::set(const std::string &fen) {
   if (token == "-") {
     ep_square = SQ_NONE;
   } else {
-    int file = token[0] - 'a';
-    int rank = token[1] - '1';
+    const int file = token[0] - 'a';
+    const int rank = token[1] - '1';
     ep_square = static_cast<Square>(rank * 8 + file);
   }
 
   ss >> halfmove_clock >> fullmove_count;
+}
+std::string Position::fen() const {
+  std::ostringstream ss;
+
+  for (int r = RANK_8; r >= RANK_1; --r) {
+    int empty_count{};
+    const auto rank{static_cast<Rank>(r)};
+    for (int f = FILE_A; f <= FILE_H; ++f) {
+      const auto file{static_cast<File>(f)};
+      const Square sq = makeSquare(file, rank);
+      if (empty(sq)) {
+        empty_count++;
+        continue;
+      }
+
+      if (empty_count > 0) {
+        ss << empty_count;
+        empty_count = 0;
+      }
+
+      for (PieceType pt = PAWN; pt <= KING; ++pt) {
+        if (getPieces(pt) & getPieces(WHITE) & (1ULL << sq)) {
+          ss << piece_chars[WHITE][pt];
+          break;
+        } else if (getPieces(pt) & getPieces(BLACK) & (1ULL << sq)) {
+          ss << piece_chars[BLACK][pt];
+          break;
+        }
+      }
+    }
+
+    if (empty_count > 0) {
+      ss << empty_count;
+      empty_count = 0;
+    }
+
+    if (rank > RANK_1) {
+      ss << '/';
+    }
+  }
+
+  ss << ' ' << (side_to_move == WHITE ? 'w' : 'b') << ' '
+     << castlingToString(castling_rights) << ' '
+     << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << ' '
+     << halfmove_clock << ' ' << fullmove_count;
+
+  return ss.str();
+}
+
+bool Position::empty(const Square square) const {
+  assert(0 <= square && square < SQ_NB && "Square out of bounds");
+  return pieceOn(square) == NO_PIECE;
+}
+Piece Position::pieceOn(const Square square) const {
+  assert(0 <= square && square < SQ_NB && "Square out of bounds");
+  return board[square];
 }
