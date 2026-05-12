@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 4.1)
-project(chess_engine)
+project(Myrmidon)
 
 set(CMAKE_CXX_STANDARD 26)
 
