@@ -35,7 +35,9 @@ std::uint64_t Zobrist::compute(const Position &pos) const {
     hash ^= en_passant[pos.getEp() % 8];
   }
 
-  hash ^= side;
+  if (pos.getSide() == BLACK) {
+    hash ^= side;
+  }
 
   return hash;
 }
