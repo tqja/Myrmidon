@@ -1,20 +1,17 @@
 #ifndef CHESS_ENGINE_ZOBRIST_H
 #define CHESS_ENGINE_ZOBRIST_H
-#include <cstdint>
-
-#include "Position.h"
 #include "types.h"
 
-class Zobrist {
-public:
-  Zobrist();
-  std::uint64_t compute(const Position &pos) const;
+class Position;
 
-private:
-  Key pieces[PIECE_NB][SQ_NB]{};
-  Key castling[CASTLING_RIGHT_NB]{};
-  Key en_passant[FILE_NB]{};
-  Key side{};
-};
+namespace Zobrist {
+void init();
+Key compute(const Position &pos);
+
+extern Key pieces[PIECE_NB][SQ_NB];
+extern Key castling[CASTLING_RIGHT_NB];
+extern Key en_passant[FILE_NB];
+extern Key side;
+}; // namespace Zobrist
 
 #endif // CHESS_ENGINE_ZOBRIST_H

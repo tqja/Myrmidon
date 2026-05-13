@@ -1,8 +1,14 @@
 #include "Zobrist.h"
-
+#include "Position.h"
 #include <random>
 
-Zobrist::Zobrist() {
+namespace Zobrist {
+Key pieces[PIECE_NB][SQ_NB]{};
+Key castling[CASTLING_RIGHT_NB]{};
+Key en_passant[FILE_NB]{};
+Key side{};
+
+void init() {
   std::mt19937_64 rng(6936582);
   std::uniform_int_distribution<Key> dist;
 
@@ -19,7 +25,8 @@ Zobrist::Zobrist() {
   }
   side = dist(rng);
 }
-std::uint64_t Zobrist::compute(const Position &pos) const {
+
+std::uint64_t compute(const Position &pos) {
   Key hash{0};
 
   for (Square sq = SQ_A1; sq <= SQ_H8; ++sq) {
@@ -41,3 +48,4 @@ std::uint64_t Zobrist::compute(const Position &pos) const {
 
   return hash;
 }
+} // namespace Zobrist
