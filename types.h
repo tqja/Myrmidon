@@ -30,6 +30,16 @@ enum Piece : std::uint8_t {
   PIECE_NB = 16
 };
 
+inline Colour colourOf(const Piece p) {
+  assert(p != NO_PIECE);
+  return p < B_PAWN ? WHITE : BLACK;
+}
+
+inline PieceType typeOf(const Piece p) {
+  assert(p != NO_PIECE);
+  return static_cast<PieceType>((p % 8) - 1);
+}
+
 inline PieceType charToPieceType(const unsigned char c) {
   switch (std::tolower(c)) {
     case 'p': return PAWN;

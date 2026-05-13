@@ -7,6 +7,31 @@
 #include <iostream>
 #include <sstream>
 
+void Position::makeMove(const Move move) {
+  const Colour ally{side_to_move};
+  const auto enemy{static_cast<Colour>(ally ^ 1)};
+  const Square from{move.from()};
+  const Square to{move.to()};
+  const Piece piece{board[from]};
+
+  if (move.isCapture() || typeOf(piece) == PAWN) {
+    halfmove_clock = 0;
+  } else {
+    halfmove_clock++;
+  }
+  if (move.isCapture()) {
+    removePiece(to);
+  }
+
+  movePiece(from, to);
+
+  side_to_move = enemy;
+  hash ^= Zobrist::side;
+  if (side_to_move == WHITE) {
+    fullmove_count++;
+  }
+}
+
 void Position::print() const {
   for (int rank = RANK_8; rank >= 0; --rank) {
     std::cout << rank + 1 << "  ";
@@ -158,4 +183,37 @@ bool Position::empty(const Square square) const {
 Piece Position::pieceOn(const Square square) const {
   assert(0 <= square && square < SQ_NB && "Square out of bounds");
   return board[square];
+}
+
+void Position::addPiece(const Piece piece, const Square sq) {
+  assert(piece != NO_PIECE);
+  assert(board[sq] == NO_PIECE);
+
+  const Colour c{colourOf(piece)};
+  const PieceType p{typeOf(piece)};
+
+  board[sq] = piece;
+  by_colour[c] |= 1ULL << sq;
+  by_type[p] |= 1ULL << sq;
+  hash ^= Zobrist::pieceKey(piece, sq);
+}
+
+void Position::removePiece(const Square sq) {
+  const Piece piece{board[sq]};
+  assert(piece != NO_PIECE);
+
+  const Colour c{colourOf(piece)};
+  const PieceType p{typeOf(piece)};
+
+  board[sq] = NO_PIECE;
+  by_colour[c] &= ~(1ULL << sq);
+  by_type[p] &= ~(1ULL << sq);
+  hash ^= Zobrist::pieceKey(piece, sq);
+}
+
+void Position::movePiece(const Square from, const Square to) {
+  const Piece piece{board[from]};
+  assert(piece != NO_PIECE);
+  removePiece(from);
+  addPiece(piece, to);
 }
