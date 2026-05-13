@@ -66,7 +66,7 @@ inline Piece charToPiece(const unsigned char c) {
     default: return NO_PIECE;
   }
 
-  return std::isupper(c) ? static_cast<Piece>(piece + 8) : piece;
+  return std::isupper(c) ? piece : static_cast<Piece>(piece + 8);
 }
 
 enum Square : std::uint8_t {
@@ -186,9 +186,19 @@ constexpr CastlingRights operator|(const CastlingRights a,
   return static_cast<CastlingRights>(static_cast<int>(a) | static_cast<int>(b));
 }
 
+constexpr CastlingRights operator&(const CastlingRights a,
+                                   const CastlingRights b) {
+  return static_cast<CastlingRights>(static_cast<int>(a) & static_cast<int>(b));
+}
+
 constexpr CastlingRights &operator|=(CastlingRights &a,
                                      const CastlingRights b) {
   return a = a | b;
+}
+
+constexpr CastlingRights &operator&=(CastlingRights &a,
+                                     const CastlingRights b) {
+  return a = a & b;
 }
 
 #endif // CHESS_ENGINE_TYPES_H
