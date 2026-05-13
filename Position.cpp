@@ -1,4 +1,6 @@
 #include "Position.h"
+
+#include "Zobrist.h"
 #include "types.h"
 
 #include <cstring>
@@ -99,6 +101,7 @@ void Position::set(const std::string &fen) {
   }
 
   ss >> halfmove_clock >> fullmove_count;
+  hash = Zobrist::compute(*this);
 }
 std::string Position::fen() const {
   std::ostringstream ss;

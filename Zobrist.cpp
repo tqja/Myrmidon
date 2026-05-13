@@ -48,4 +48,7 @@ std::uint64_t compute(const Position &pos) {
 
   return hash;
 }
+Key pieceKey(const Piece piece, const Square sq) {
+  return pieces[piece][sq];
+}
 } // namespace Zobrist

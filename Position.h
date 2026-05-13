@@ -33,6 +33,7 @@ private:
     Square ep_square{};
     int halfmove_clock{};
     int fullmove_count{};
+  Key hash{};
 };
 
 inline Bitboard Position::getPieces() const {

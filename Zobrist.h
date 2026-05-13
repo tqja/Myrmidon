@@ -7,6 +7,7 @@ class Position;
 namespace Zobrist {
 void init();
 Key compute(const Position &pos);
+Key pieceKey(Piece piece, Square sq);
 
 extern Key pieces[PIECE_NB][SQ_NB];
 extern Key castling[CASTLING_RIGHT_NB];
