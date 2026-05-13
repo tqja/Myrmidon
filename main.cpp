@@ -9,7 +9,11 @@ int main() {
 
     std::cout << "Hash:              " << Zobrist::compute(board) << '\n';
     std::cout << board.fen() << '\n';
-    constexpr Move m{SQ_E4, SQ_E6, QUEEN_CASTLE};
+    constexpr Move m{SQ_H2, SQ_H3, QUIET};
     std::cout << static_cast<int>(m.from()) << " " << static_cast<int>(m.to()) << " " << m.flags() << '\n';
+
+    board.makeMove(m);
+
+    board.print();
     return 0;
 }
