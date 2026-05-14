@@ -61,6 +61,7 @@ void Position::print() const {
             << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << '\n';
   std::cout << "Halfmove clock:    " << halfmove_clock << '\n';
   std::cout << "Fullmove count:    " << fullmove_count << '\n';
+  std::cout << "Hash:              " << hash << '\n';
 }
 
 void Position::set(const std::string &fen) {
