@@ -207,4 +207,19 @@ constexpr CastlingRights &operator&=(CastlingRights &a,
   return a = a & b;
 }
 
+inline void printBitboard(const Bitboard bb) {
+  for (int rank = 7; rank >= 0; --rank) {
+    std::cout << rank + 1 << "  ";
+    for (int file = 0; file < 8; ++file) {
+      const auto sq = static_cast<Square>(rank * 8 + file);
+      if (bb & (1ULL << sq))
+        std::cout << "x ";
+      else
+        std::cout << ". ";
+    }
+    std::cout << '\n';
+  }
+  std::cout << "   a b c d e f g h\n\n";
+}
+
 #endif // CHESS_ENGINE_TYPES_H
