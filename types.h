@@ -85,6 +85,12 @@ enum Square : std::uint8_t {
 };
 // clang-format on
 
+inline Square popLsb(Bitboard &bitboard) {
+  const auto sq = static_cast<Square>(__builtin_ctzll(bitboard));
+  bitboard &= bitboard - 1;
+  return sq;
+}
+
 inline std::string squareToString(const Square sq) {
   char file = static_cast<char>('a' + (sq % 8));
   char rank = static_cast<char>('1' + (sq / 8));
