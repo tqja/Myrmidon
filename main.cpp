@@ -1,19 +1,24 @@
+#include "Attacks.h"
+#include "Move.h"
 #include "Position.h"
 #include "Zobrist.h"
-#include "Move.h"
 
 int main() {
-    Position board{};
-    board.set("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
-    board.print();
+  Attacks::init();
+  Zobrist::init();
 
-    std::cout << "Hash:              " << Zobrist::compute(board) << '\n';
-    std::cout << board.fen() << '\n';
-    constexpr Move m{SQ_H2, SQ_H3, QUIET};
-    std::cout << static_cast<int>(m.from()) << " " << static_cast<int>(m.to()) << " " << m.flags() << '\n';
+  Position board{};
+  board.set("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
+  board.print();
 
-    board.makeMove(m);
+  std::cout << board.fen() << '\n';
+  constexpr Move m{SQ_H2, SQ_H3, QUIET};
+  std::cout << static_cast<int>(m.from()) << " " << static_cast<int>(m.to())
+            << " " << m.flags() << '\n';
 
-    board.print();
-    return 0;
+  board.makeMove(m);
+
+  board.print();
+  printBitboard(Attacks::knight_attacks[SQ_E5]);
+  return 0;
 }

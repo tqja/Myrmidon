@@ -11,4 +11,6 @@ add_executable(chess_engine main.cpp
         Zobrist.h
         Move.cpp
         Move.h
+        Attacks.cpp
+        Attacks.h
 )
