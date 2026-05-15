@@ -9,7 +9,6 @@ add_executable(chess_engine main.cpp
         types.h
         Zobrist.cpp
         Zobrist.h
-        Move.cpp
         Move.h
         Attacks.cpp
         Attacks.h
