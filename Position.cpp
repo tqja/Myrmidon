@@ -9,7 +9,7 @@
 
 void Position::makeMove(const Move move) {
   const Colour ally{side_to_move};
-  const auto enemy{static_cast<Colour>(ally ^ 1)};
+  const auto enemy{opposite(ally)};
   const Square from{move.from()};
   const Square to{move.to()};
   const Piece piece{board[from]};

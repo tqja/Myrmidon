@@ -12,4 +12,6 @@ add_executable(chess_engine main.cpp
         Move.h
         Attacks.cpp
         Attacks.h
+        MoveGen.cpp
+        MoveGen.h
 )

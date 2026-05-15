@@ -35,6 +35,10 @@ inline Colour colourOf(const Piece p) {
   return p < B_PAWN ? WHITE : BLACK;
 }
 
+inline Colour opposite(const Colour colour) {
+  return static_cast<Colour>(colour ^ 1);
+}
+
 inline PieceType typeOf(const Piece p) {
   assert(p != NO_PIECE);
   return static_cast<PieceType>((p % 8) - 1);
