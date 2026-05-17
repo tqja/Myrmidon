@@ -1,11 +1,16 @@
 #include "Attacks.h"
 
 #include <cstdlib>
+#include <immintrin.h>
 
 namespace Attacks {
 Bitboard pawn_attacks[COLOUR_NB][SQ_NB]{};
 Bitboard knight_attacks[SQ_NB]{};
 Bitboard king_attacks[SQ_NB]{};
+Bitboard rook_mask[SQ_NB]{};
+Bitboard bishop_mask[SQ_NB]{};
+Bitboard rook_table[SQ_NB][4096];
+Bitboard bishop_table[SQ_NB][512];
 
 static Bitboard initWhitePawnAttacks(const Square sq, const Rank rank,
                                      const File file) {
@@ -75,6 +80,166 @@ static Bitboard initKingAttacks(const Square sq, const Rank rank,
   return bb;
 }
 
+static Bitboard computeRookMask(const Square sq) {
+  Bitboard mask{};
+  const auto sq_rank{static_cast<Rank>(sq / 8)};
+  const auto sq_file{static_cast<File>(sq % 8)};
+
+  for (Rank rank = RANK_2; rank < RANK_8; ++rank) {
+    if (rank == sq_rank) {
+      continue;
+    }
+    mask |= 1ULL << (rank * 8 + sq_file);
+  }
+
+  for (File file = FILE_B; file < FILE_H; ++file) {
+    if (file == sq_file) {
+      continue;
+    }
+    mask |= 1ULL << (sq_rank * 8 + file);
+  }
+
+  return mask;
+}
+
+static Bitboard computeBishopMask(const Square sq) {
+  Bitboard mask{};
+  const auto sq_rank{static_cast<Rank>(sq / 8)};
+  const auto sq_file{static_cast<File>(sq % 8)};
+
+  for (int d = 1; d < 7; ++d) {
+    const bool north_east{sq_rank + d < RANK_8 && sq_file + d < FILE_H};
+    const bool south_east{sq_rank - d > RANK_1 && sq_file + d < FILE_H};
+    const bool south_west{sq_rank - d > RANK_1 && sq_file - d > FILE_A};
+    const bool north_west{sq_rank + d < RANK_8 && sq_file - d > FILE_A};
+
+    if (north_east) {
+      mask |= 1ULL << ((sq_rank + d) * 8 + (sq_file + d));
+    }
+    if (south_east) {
+      mask |= 1ULL << ((sq_rank - d) * 8 + (sq_file + d));
+    }
+    if (south_west) {
+      mask |= 1ULL << ((sq_rank - d) * 8 + (sq_file - d));
+    }
+    if (north_west) {
+      mask |= 1ULL << ((sq_rank + d) * 8 + (sq_file - d));
+    }
+  }
+
+  return mask;
+}
+
+static Bitboard computeRookAttacks(const Square sq, const Bitboard blockers) {
+  Bitboard attacks = 0;
+  const int sq_rank{sq / 8};
+  const int sq_file{sq % 8};
+
+  // north
+  for (int d = 1; sq_rank + d < RANK_NB; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank + d) * 8 + sq_file);
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // south
+  for (int d = 1; sq_rank - d >= RANK_1; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank - d) * 8 + sq_file);
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // east
+  for (int d = 1; sq_file + d < FILE_NB; ++d) {
+    const Bitboard attack = 1ULL << (sq_rank * 8 + (sq_file + d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // west
+  for (int d = 1; sq_file - d >= FILE_A; ++d) {
+    const Bitboard attack = 1ULL << (sq_rank * 8 + (sq_file - d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+
+  return attacks;
+}
+
+static Bitboard computeBishopAttacks(const Square sq, const Bitboard blockers) {
+  Bitboard attacks = 0;
+  const int sq_rank = sq / 8;
+  const int sq_file = sq % 8;
+
+  // north‑east
+  for (int d = 1; sq_rank + d < RANK_NB && sq_file + d < FILE_NB; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank + d) * 8 + (sq_file + d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // north‑west
+  for (int d = 1; sq_rank + d < RANK_NB && sq_file - d >= FILE_A; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank + d) * 8 + (sq_file - d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // south‑east
+  for (int d = 1; sq_rank - d >= RANK_1 && sq_file + d < FILE_NB; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank - d) * 8 + (sq_file + d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+  // south‑west
+  for (int d = 1; sq_rank - d >= RANK_1 && sq_file - d >= FILE_A; ++d) {
+    const Bitboard attack = 1ULL << ((sq_rank - d) * 8 + (sq_file - d));
+    attacks |= attack;
+    if (blockers & attack) {
+      break;
+    }
+  }
+
+  return attacks;
+}
+
+void initAttackTables() {
+  // rook
+  for (Square sq = SQ_A1; sq < SQ_NB; ++sq) {
+    const Bitboard mask = computeRookMask(sq);
+    rook_mask[sq] = mask;
+
+    Bitboard blockers = 0;
+    do {
+      rook_table[sq][_pext_u64(blockers, mask)] =
+          computeRookAttacks(sq, blockers);
+      blockers = (blockers - mask) & mask;
+    } while (blockers);
+  }
+
+  // bishop
+  for (Square sq = SQ_A1; sq < SQ_NB; ++sq) {
+    const Bitboard mask = computeBishopMask(sq);
+    bishop_mask[sq] = mask;
+
+    Bitboard blockers = 0;
+    do {
+      bishop_table[sq][_pext_u64(blockers, mask)] =
+          computeBishopAttacks(sq, blockers);
+      blockers = (blockers - mask) & mask;
+    } while (blockers);
+  }
+}
+
 void init() {
   for (Square sq = SQ_A1; sq < SQ_NB; ++sq) {
     const auto rank = static_cast<Rank>(sq / 8);
@@ -85,6 +250,8 @@ void init() {
     knight_attacks[sq] = initKnightAttacks(sq, rank, file);
     king_attacks[sq] = initKingAttacks(sq, rank, file);
   }
+
+  initAttackTables();
 }
 
 } // namespace Attacks

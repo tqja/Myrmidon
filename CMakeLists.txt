@@ -15,3 +15,6 @@ add_executable(chess_engine main.cpp
         MoveGen.cpp
         MoveGen.h
 )
+
+# required for _pext_u64
+target_compile_options(chess_engine PRIVATE -mbmi2)
