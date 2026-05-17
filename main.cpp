@@ -19,7 +19,7 @@ int main() {
   std::string input{};
   while (input != "x") {
     std::cout << std::flush;
-    printBitboard(Attacks::bishop_mask[sq]);
+    printBitboard(Attacks::rook_attacks(static_cast<Square>(sq), pos.getPieces()));
     std::cout << "Square: " << sq << "\n";
     std::cin >> input;
     if (input == "b") {

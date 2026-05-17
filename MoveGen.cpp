@@ -17,7 +17,7 @@ static void generatePromoCaptures(std::vector<Move> &move_list,
   }
 }
 static void generateEnPassant(const Position &pos, std::vector<Move> &move_list,
-                       const Colour ally, const Colour enemy) {
+                              const Colour ally, const Colour enemy) {
   if (pos.getEp() != SQ_NONE) {
     const Square ep{pos.getEp()};
     const Bitboard ally_pawns{pos.getPieces(PAWN, ally)};
@@ -77,9 +77,10 @@ static void generatePawnMoves(const Position &pos, std::vector<Move> &move_list,
   generateEnPassant(pos, move_list, ally, enemy);
 }
 
-static void generateKnightMoves(const Position &pos, std::vector<Move> &move_list,
-                         const Bitboard ally_pieces,
-                         const Bitboard enemy_pieces) {
+static void generateKnightMoves(const Position &pos,
+                                std::vector<Move> &move_list,
+                                const Bitboard ally_pieces,
+                                const Bitboard enemy_pieces) {
   Bitboard knights{pos.getPieces(KNIGHT) & ally_pieces};
   while (knights) {
     const Square from{popLsb(knights)};
@@ -92,12 +93,60 @@ static void generateKnightMoves(const Position &pos, std::vector<Move> &move_lis
   }
 }
 
-// TODO: implement sliding pieces
+static void generateBishopMoves(const Position &pos,
+                                std::vector<Move> &move_list,
+                                const Bitboard ally_pieces,
+                                const Bitboard enemy_pieces) {
+  Bitboard bishops{pos.getPieces(BISHOP) & ally_pieces};
+  while (bishops) {
+    const Square from{popLsb(bishops)};
+    Bitboard targets{Attacks::bishop_attacks(from, pos.getPieces()) &
+                     ~ally_pieces};
+    while (targets) {
+      const Square to{popLsb(targets)};
+      const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
+      move_list.emplace_back(from, to, flags);
+    }
+  }
+}
+
+static void generateRookMoves(const Position &pos, std::vector<Move> &move_list,
+                              const Bitboard ally_pieces,
+                              const Bitboard enemy_pieces) {
+  Bitboard rook{pos.getPieces(ROOK) & ally_pieces};
+  while (rook) {
+    const Square from{popLsb(rook)};
+    Bitboard targets{Attacks::rook_attacks(from, pos.getPieces()) &
+                     ~ally_pieces};
+    while (targets) {
+      const Square to{popLsb(targets)};
+      const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
+      move_list.emplace_back(from, to, flags);
+    }
+  }
+}
+
+static void generateQueenMoves(const Position &pos,
+                               std::vector<Move> &move_list,
+                               const Bitboard ally_pieces,
+                               const Bitboard enemy_pieces) {
+  Bitboard queen{pos.getPieces(QUEEN) & ally_pieces};
+  while (queen) {
+    const Square from{popLsb(queen)};
+    Bitboard targets{Attacks::queen_attacks(from, pos.getPieces()) &
+                     ~ally_pieces};
+    while (targets) {
+      const Square to{popLsb(targets)};
+      const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
+      move_list.emplace_back(from, to, flags);
+    }
+  }
+}
 
 // TODO: implement castling
 static void generateKingMoves(const Position &pos, std::vector<Move> &move_list,
-                       const Bitboard ally_pieces,
-                       const Bitboard enemy_pieces) {
+                              const Bitboard ally_pieces,
+                              const Bitboard enemy_pieces) {
   Bitboard kings{pos.getPieces(KING) & ally_pieces};
   while (kings) {
     const Square from{popLsb(kings)};
@@ -119,6 +168,9 @@ std::vector<Move> generateMoves(const Position &pos) {
 
   generatePawnMoves(pos, move_list, enemy_pieces, ally, enemy);
   generateKnightMoves(pos, move_list, ally_pieces, enemy_pieces);
+  generateBishopMoves(pos, move_list, ally_pieces, enemy_pieces);
+  generateRookMoves(pos, move_list, ally_pieces, enemy_pieces);
+  generateQueenMoves(pos, move_list, ally_pieces, enemy_pieces);
   generateKingMoves(pos, move_list, ally_pieces, enemy_pieces);
 
   return move_list;

@@ -14,16 +14,16 @@ extern Bitboard bishop_table[SQ_NB][512];
 
 void init();
 
-inline Bitboard rookAttacks(const Square sq, const Bitboard occ) {
+inline Bitboard rook_attacks(const Square sq, const Bitboard occ) {
   return rook_table[sq][_pext_u64(occ, rook_mask[sq])];
 }
 
-inline Bitboard bishopAttacks(const Square sq, const Bitboard occ) {
+inline Bitboard bishop_attacks(const Square sq, const Bitboard occ) {
   return bishop_table[sq][_pext_u64(occ, bishop_mask[sq])];
 }
 
-inline Bitboard queenAttacks(const Square sq, const Bitboard occ) {
-  return rookAttacks(sq, occ) | bishopAttacks(sq, occ);
+inline Bitboard queen_attacks(const Square sq, const Bitboard occ) {
+  return rook_attacks(sq, occ) | bishop_attacks(sq, occ);
 }
 
 } // namespace Attacks
