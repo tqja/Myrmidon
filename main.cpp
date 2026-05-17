@@ -2,23 +2,32 @@
 #include "Move.h"
 #include "Position.h"
 #include "Zobrist.h"
+#include "MoveGen.h"
 
 int main() {
   Attacks::init();
   Zobrist::init();
 
-  Position board{};
-  board.set("rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2");
-  board.print();
+  Position pos{};
+  pos.set("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  pos.print();
 
-  std::cout << board.fen() << '\n';
-  constexpr Move m{SQ_H2, SQ_H3, QUIET};
-  std::cout << static_cast<int>(m.from()) << " " << static_cast<int>(m.to())
-            << " " << m.flags() << '\n';
+  const std::vector<Move> moves{generateMoves(pos)};
+  std::cout << moves.size() << '\n';
 
-  board.makeMove(m);
+  int sq{SQ_A1};
+  std::string input{};
+  while (input != "x") {
+    std::cout << std::flush;
+    printBitboard(Attacks::bishop_mask[sq]);
+    std::cout << "Square: " << sq << "\n";
+    std::cin >> input;
+    if (input == "b") {
+      sq = std::max(0, sq - 1);
+    } else {
+      sq = std::min(63, sq + 1);
+    }
+  }
 
-  board.print();
-  printBitboard(Attacks::knight_attacks[SQ_E5]);
   return 0;
 }
