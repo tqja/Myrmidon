@@ -96,12 +96,12 @@ static void generateKnightMoves(const Position &pos,
 static void generateBishopMoves(const Position &pos,
                                 std::vector<Move> &move_list,
                                 const Bitboard ally_pieces,
-                                const Bitboard enemy_pieces) {
+                                const Bitboard enemy_pieces,
+                                const Bitboard occupancy) {
   Bitboard bishops{pos.getPieces(BISHOP) & ally_pieces};
   while (bishops) {
     const Square from{popLsb(bishops)};
-    Bitboard targets{Attacks::bishop_attacks(from, pos.getPieces()) &
-                     ~ally_pieces};
+    Bitboard targets{Attacks::bishop_attacks(from, occupancy) & ~ally_pieces};
     while (targets) {
       const Square to{popLsb(targets)};
       const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
@@ -112,12 +112,12 @@ static void generateBishopMoves(const Position &pos,
 
 static void generateRookMoves(const Position &pos, std::vector<Move> &move_list,
                               const Bitboard ally_pieces,
-                              const Bitboard enemy_pieces) {
+                              const Bitboard enemy_pieces,
+                              const Bitboard occupancy) {
   Bitboard rook{pos.getPieces(ROOK) & ally_pieces};
   while (rook) {
     const Square from{popLsb(rook)};
-    Bitboard targets{Attacks::rook_attacks(from, pos.getPieces()) &
-                     ~ally_pieces};
+    Bitboard targets{Attacks::rook_attacks(from, occupancy) & ~ally_pieces};
     while (targets) {
       const Square to{popLsb(targets)};
       const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
@@ -129,12 +129,12 @@ static void generateRookMoves(const Position &pos, std::vector<Move> &move_list,
 static void generateQueenMoves(const Position &pos,
                                std::vector<Move> &move_list,
                                const Bitboard ally_pieces,
-                               const Bitboard enemy_pieces) {
+                               const Bitboard enemy_pieces,
+                               const Bitboard occupancy) {
   Bitboard queen{pos.getPieces(QUEEN) & ally_pieces};
   while (queen) {
     const Square from{popLsb(queen)};
-    Bitboard targets{Attacks::queen_attacks(from, pos.getPieces()) &
-                     ~ally_pieces};
+    Bitboard targets{Attacks::queen_attacks(from, occupancy) & ~ally_pieces};
     while (targets) {
       const Square to{popLsb(targets)};
       const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
@@ -165,12 +165,13 @@ std::vector<Move> generateMoves(const Position &pos) {
   const Colour enemy{opposite(ally)};
   const Bitboard ally_pieces{pos.getPieces(ally)};
   const Bitboard enemy_pieces{pos.getPieces(enemy)};
+  const Bitboard occupancy{pos.getPieces()};
 
   generatePawnMoves(pos, move_list, enemy_pieces, ally, enemy);
   generateKnightMoves(pos, move_list, ally_pieces, enemy_pieces);
-  generateBishopMoves(pos, move_list, ally_pieces, enemy_pieces);
-  generateRookMoves(pos, move_list, ally_pieces, enemy_pieces);
-  generateQueenMoves(pos, move_list, ally_pieces, enemy_pieces);
+  generateBishopMoves(pos, move_list, ally_pieces, enemy_pieces, occupancy);
+  generateRookMoves(pos, move_list, ally_pieces, enemy_pieces, occupancy);
+  generateQueenMoves(pos, move_list, ally_pieces, enemy_pieces, occupancy);
   generateKingMoves(pos, move_list, ally_pieces, enemy_pieces);
 
   return move_list;
