@@ -16,7 +16,7 @@ static void generatePromoCaptures(std::vector<Move> &move_list,
     move_list.emplace_back(from, to, promo);
   }
 }
-void generateEnPassant(const Position &pos, std::vector<Move> &move_list,
+static void generateEnPassant(const Position &pos, std::vector<Move> &move_list,
                        const Colour ally, const Colour enemy) {
   if (pos.getEp() != SQ_NONE) {
     const Square ep{pos.getEp()};
@@ -77,7 +77,7 @@ static void generatePawnMoves(const Position &pos, std::vector<Move> &move_list,
   generateEnPassant(pos, move_list, ally, enemy);
 }
 
-void generateKnightMoves(const Position &pos, std::vector<Move> &move_list,
+static void generateKnightMoves(const Position &pos, std::vector<Move> &move_list,
                          const Bitboard ally_pieces,
                          const Bitboard enemy_pieces) {
   Bitboard knights{pos.getPieces(KNIGHT) & ally_pieces};
@@ -95,7 +95,7 @@ void generateKnightMoves(const Position &pos, std::vector<Move> &move_list,
 // TODO: implement sliding pieces
 
 // TODO: implement castling
-void generateKingMoves(const Position &pos, std::vector<Move> &move_list,
+static void generateKingMoves(const Position &pos, std::vector<Move> &move_list,
                        const Bitboard ally_pieces,
                        const Bitboard enemy_pieces) {
   Bitboard kings{pos.getPieces(KING) & ally_pieces};
