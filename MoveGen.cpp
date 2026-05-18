@@ -143,7 +143,6 @@ static void generateQueenMoves(const Position &pos,
   }
 }
 
-// TODO: implement castling
 static void generateKingMoves(const Position &pos, std::vector<Move> &move_list,
                               const Bitboard ally_pieces,
                               const Bitboard enemy_pieces) {
@@ -155,6 +154,58 @@ static void generateKingMoves(const Position &pos, std::vector<Move> &move_list,
       const Square to{popLsb(targets)};
       const MoveFlags flags{(enemy_pieces & (1ULL << to)) ? CAPTURE : QUIET};
       move_list.emplace_back(from, to, flags);
+    }
+  }
+}
+
+static void generateCastlingMoves(const Position &pos,
+                                  std::vector<Move> &move_list,
+                                  const Colour ally, const Colour enemy) {
+  const CastlingRights cr = pos.getCastleRights();
+
+  if (ally == WHITE) {
+    constexpr Square king_sq{SQ_E1};
+    if (pos.isSquareAttacked(king_sq, enemy)) {
+      return;
+    };
+
+    const bool queenside = (cr & WHITE_OOO) && pos.empty(SQ_B1) &&
+                           pos.empty(SQ_C1) && pos.empty(SQ_D1) &&
+                           !pos.isSquareAttacked(SQ_C1, enemy) &&
+                           !pos.isSquareAttacked(SQ_D1, enemy);
+    const bool kingside = (cr & WHITE_OO) && pos.empty(SQ_F1) &&
+                          pos.empty(SQ_G1) &&
+                          !pos.isSquareAttacked(SQ_F1, enemy) &&
+                          !pos.isSquareAttacked(SQ_G1, enemy);
+
+    if (queenside) {
+      move_list.emplace_back(SQ_E1, SQ_C1, QUEEN_CASTLE);
+    }
+    if (kingside) {
+      move_list.emplace_back(SQ_E1, SQ_G1, KING_CASTLE);
+    }
+
+  } else {
+    constexpr Square king_sq = SQ_E8;
+    if (pos.isSquareAttacked(king_sq, enemy)) {
+      return;
+    }
+
+    const bool can_castle_queenside = (cr & BLACK_OOO) && pos.empty(SQ_B8) && pos.empty(SQ_C8) &&
+                                      pos.empty(SQ_D8) &&
+                                      !pos.isSquareAttacked(SQ_C8, enemy) &&
+                                      !pos.isSquareAttacked(SQ_D8, enemy);
+
+    const bool can_castle_kingside = (cr & BLACK_OO) && pos.empty(SQ_F8) &&
+                                     pos.empty(SQ_G8) &&
+                                     !pos.isSquareAttacked(SQ_F8, enemy) &&
+                                     !pos.isSquareAttacked(SQ_G8, enemy);
+
+    if (can_castle_queenside) {
+      move_list.emplace_back(SQ_E8, SQ_C8, QUEEN_CASTLE);
+    }
+    if (can_castle_kingside) {
+      move_list.emplace_back(SQ_E8, SQ_G8, KING_CASTLE);
     }
   }
 }
@@ -173,6 +224,7 @@ std::vector<Move> generateMoves(const Position &pos) {
   generateRookMoves(pos, move_list, ally_pieces, enemy_pieces, occupancy);
   generateQueenMoves(pos, move_list, ally_pieces, enemy_pieces, occupancy);
   generateKingMoves(pos, move_list, ally_pieces, enemy_pieces);
+  generateCastlingMoves(pos, move_list, ally, enemy);
 
   return move_list;
 }
