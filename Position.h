@@ -26,6 +26,8 @@ public:
   CastlingRights getCastleRights() const { return castling_rights; }
   Square getEp() const { return ep_square; }
 
+  bool isSquareAttacked(Square sq, Colour attacker) const;
+
 private:
   std::array<Piece, SQ_NB> board{};
   std::array<Bitboard, PIECE_TYPE_NB> by_type{};

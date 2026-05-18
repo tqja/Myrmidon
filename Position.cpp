@@ -1,5 +1,6 @@
 #include "Position.h"
 
+#include "Attacks.h"
 #include "Zobrist.h"
 #include "types.h"
 
@@ -30,6 +31,22 @@ void Position::makeMove(const Move move) {
   if (side_to_move == WHITE) {
     fullmove_count++;
   }
+}
+
+bool Position::isSquareAttacked(const Square sq, const Colour attacker) const {
+  const Bitboard occupancy = getPieces();
+  const Bitboard pawns = getPieces(PAWN, attacker);
+  const Bitboard knights = getPieces(KNIGHT, attacker);
+  const Bitboard bishops = getPieces(BISHOP, attacker);
+  const Bitboard rooks = getPieces(ROOK, attacker);
+  const Bitboard queens = getPieces(QUEEN, attacker);
+  const Bitboard kings = getPieces(KING, attacker);
+
+  return (Attacks::pawn_attacks[attacker][sq] & pawns) ||
+         (Attacks::knight_attacks[sq] & knights) ||
+         (Attacks::bishop_attacks(sq, occupancy) & (bishops | queens)) ||
+         (Attacks::rook_attacks(sq, occupancy) & (rooks | queens)) ||
+         (Attacks::king_attacks[sq] & kings);
 }
 
 void Position::print() const {
