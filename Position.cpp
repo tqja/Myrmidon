@@ -58,7 +58,7 @@ void Position::print() const {
 
       char c = '.';
       for (int pt = PAWN; pt < PIECE_TYPE_NB; ++pt) {
-        auto piece_type = static_cast<PieceType>(pt);
+        const auto piece_type = static_cast<PieceType>(pt);
         if (getPieces(piece_type) & getPieces(WHITE) & mask) {
           c = piece_chars[WHITE][piece_type];
         } else if (getPieces(piece_type) & getPieces(BLACK) & mask) {
@@ -178,7 +178,6 @@ std::string Position::fen() const {
 
     if (empty_count > 0) {
       ss << empty_count;
-      empty_count = 0;
     }
 
     if (rank > RANK_1) {
