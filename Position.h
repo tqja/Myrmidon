@@ -4,6 +4,7 @@
 #include "types.h"
 
 #include <string>
+#include <array>
 
 class Position {
 public:
