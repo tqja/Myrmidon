@@ -197,10 +197,6 @@ bool Position::empty(const Square square) const {
   assert(0 <= square && square < SQ_NB && "Square out of bounds");
   return pieceOn(square) == NO_PIECE;
 }
-Piece Position::pieceOn(const Square square) const {
-  assert(0 <= square && square < SQ_NB && "Square out of bounds");
-  return board[square];
-}
 
 void Position::addPiece(const Piece piece, const Square sq) {
   assert(piece != NO_PIECE);

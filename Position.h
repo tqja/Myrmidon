@@ -14,7 +14,7 @@ public:
   std::string fen() const;
 
   bool empty(Square square) const;
-  inline Piece pieceOn(Square square) const;
+
 
   void makeMove(Move move);
 
@@ -28,6 +28,11 @@ public:
   Square getEp() const { return ep_square; }
 
   bool isSquareAttacked(Square sq, Colour attacker) const;
+
+  inline Piece pieceOn(const Square square) const {
+    assert(0 <= square && square < SQ_NB && "Square out of bounds");
+    return board[square];
+  }
 
 private:
   std::array<Piece, SQ_NB> board{};
