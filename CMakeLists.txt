@@ -3,7 +3,7 @@ project(Myrmidon)
 
 set(CMAKE_CXX_STANDARD 26)
 
-add_executable(chess_engine main.cpp
+add_executable(Myrmidon main.cpp
         Position.cpp
         Position.h
         types.h
