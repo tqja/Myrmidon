@@ -1,16 +1,17 @@
 #ifndef MYRMIDON_ATTACKS_H
 #define MYRMIDON_ATTACKS_H
 #include "types.h"
+#include <array>
 #include <immintrin.h>
 
 namespace Attacks {
-extern Bitboard pawn_attacks[COLOUR_NB][SQ_NB];
-extern Bitboard knight_attacks[SQ_NB];
-extern Bitboard king_attacks[SQ_NB];
-extern Bitboard rook_mask[SQ_NB];
-extern Bitboard bishop_mask[SQ_NB];
-extern Bitboard rook_table[SQ_NB][4096];
-extern Bitboard bishop_table[SQ_NB][512];
+extern std::array<std::array<Bitboard, SQ_NB>, COLOUR_NB> pawn_attacks;
+extern std::array<Bitboard, SQ_NB> knight_attacks;
+extern std::array<Bitboard, SQ_NB> king_attacks;
+extern std::array<Bitboard, SQ_NB> rook_mask;
+extern std::array<Bitboard, SQ_NB> bishop_mask;
+extern std::array<std::array<Bitboard, 4096>, SQ_NB> rook_table;
+extern std::array<std::array<Bitboard, 512>, SQ_NB> bishop_table;
 
 void init();
 

@@ -4,13 +4,13 @@
 #include <immintrin.h>
 
 namespace Attacks {
-Bitboard pawn_attacks[COLOUR_NB][SQ_NB]{};
-Bitboard knight_attacks[SQ_NB]{};
-Bitboard king_attacks[SQ_NB]{};
-Bitboard rook_mask[SQ_NB]{};
-Bitboard bishop_mask[SQ_NB]{};
-Bitboard rook_table[SQ_NB][4096];
-Bitboard bishop_table[SQ_NB][512];
+std::array<std::array<Bitboard, SQ_NB>, COLOUR_NB> pawn_attacks{};
+std::array<Bitboard, SQ_NB> knight_attacks{};
+std::array<Bitboard, SQ_NB> king_attacks{};
+std::array<Bitboard, SQ_NB> rook_mask{};
+std::array<Bitboard, SQ_NB> bishop_mask{};
+std::array<std::array<Bitboard, 4096>, SQ_NB> rook_table{};
+std::array<std::array<Bitboard, 512>, SQ_NB> bishop_table{};
 
 static Bitboard initWhitePawnAttacks(const Square sq, const Rank rank,
                                      const File file) {
