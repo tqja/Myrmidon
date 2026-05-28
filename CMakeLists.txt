@@ -17,4 +17,4 @@ add_executable(Myrmidon main.cpp
 )
 
 # required for _pext_u64
-target_compile_options(chess_engine PRIVATE -mbmi2)
+target_compile_options(Myrmidon PRIVATE -mbmi2)
