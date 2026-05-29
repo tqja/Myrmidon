@@ -44,6 +44,11 @@ inline PieceType typeOf(const Piece p) {
   return static_cast<PieceType>((p % 8) - 1);
 }
 
+inline Piece typeToPiece(const Colour colour, const PieceType pt) {
+  assert(pt != NO_PIECE_TYPE);
+  return static_cast<Piece>(static_cast<int>(pt) + static_cast<int>(colour) == WHITE ? 1 : 9);
+}
+
 inline PieceType charToPieceType(const unsigned char c) {
   switch (std::tolower(c)) {
     case 'p': return PAWN;
@@ -88,6 +93,16 @@ enum Square : std::uint8_t {
   SQ_NB = 64
 };
 // clang-format on
+
+constexpr Square operator+(const Square lhs, const Square rhs) {
+  return static_cast<Square>(static_cast<int>(lhs) + static_cast<int>(rhs));
+}
+constexpr Square &operator+=(Square &lhs, const Square rhs) {
+  return lhs = lhs + rhs;
+}
+
+constexpr Bitboard rook_start{(1ULL << SQ_A1) | (1ULL << SQ_A8) |
+                              (1ULL << SQ_H1) | (1ULL << SQ_H8)};
 
 inline Square popLsb(Bitboard &bitboard) {
   const auto sq = static_cast<Square>(__builtin_ctzll(bitboard));

@@ -24,7 +24,7 @@ public:
   Bitboard getPieces(PieceType piece_type, Colour colour) const;
 
   Colour getSide() const { return side_to_move; }
-  CastlingRights getCastleRights() const { return castling_rights; }
+  CastlingRights getCastleRights() const { return static_cast<CastlingRights>(castling_rights); }
   Square getEp() const { return ep_square; }
 
   bool isSquareAttacked(Square sq, Colour attacker) const;
@@ -40,7 +40,7 @@ private:
   std::array<Bitboard, COLOUR_NB> by_colour{};
 
   Colour side_to_move{};
-  CastlingRights castling_rights{};
+  uint8_t castling_rights{};
   Square ep_square{};
   int halfmove_clock{};
   int fullmove_count{};

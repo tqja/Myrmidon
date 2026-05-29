@@ -1,6 +1,7 @@
 #include "Position.h"
 
 #include "Attacks.h"
+#include "Move.h"
 #include "Zobrist.h"
 #include "types.h"
 
@@ -9,22 +10,98 @@
 #include <sstream>
 
 void Position::makeMove(const Move move) {
-  const Colour ally{side_to_move};
-  const auto enemy{opposite(ally)};
+  const auto enemy{opposite(side_to_move)};
   const Square from{move.from()};
   const Square to{move.to()};
   const Piece piece{board[from]};
+
+  const CastlingRights old_cr = static_cast<CastlingRights>(castling_rights);
+  const int old_ep_file{(ep_square == SQ_NONE) ? FILE_NB : ep_square % 8};
+  const int ep_offset{(side_to_move == WHITE) ? SOUTH : NORTH};
 
   if (move.isCapture() || typeOf(piece) == PAWN) {
     halfmove_clock = 0;
   } else {
     halfmove_clock++;
   }
-  if (move.isCapture()) {
+
+  if (move.isCapture() && !move.isEnPassant()) {
+    if (typeOf(pieceOn(to)) == ROOK && ((1ULL << to) & rook_start)) {
+      // remove the castling rights of enemy if rook is captured on start square
+      const int file{to % 8};
+      if (file == FILE_A) { // queenside
+        castling_rights &= ~(side_to_move == WHITE ? BLACK_OOO : WHITE_OOO);
+      } else { // kingside
+        castling_rights &= ~(side_to_move == WHITE ? BLACK_OO : WHITE_OO);
+      }
+    }
     removePiece(to);
   }
 
-  movePiece(from, to);
+  // double push & en passant
+  if (move.isDoublePawn()) {
+    ep_square = static_cast<Square>(to + ep_offset);
+  } else {
+    ep_square = SQ_NONE;
+  }
+  if (move.isEnPassant()) {
+    removePiece(static_cast<Square>(to + ep_offset));
+    ep_square = SQ_NONE;
+  }
+  if (old_ep_file < FILE_NB) {
+    hash ^= Zobrist::en_passant[old_ep_file];
+  }
+  if (ep_square != SQ_NONE) {
+    hash ^= Zobrist::en_passant[ep_square % 8];
+  }
+
+  // promotion, otherwise normally move
+  if (move.isPromotion()) {
+    Piece promo_piece{typeToPiece(side_to_move, move.promotionType())};
+    removePiece(from);
+    addPiece(promo_piece, to);
+  } else {
+    movePiece(from, to);
+  }
+
+  // castling
+  if (move.isCastling()) {
+    Square rook_from, rook_to;
+    if (move.flags() == KING_CASTLE) {
+      rook_from = SQ_H1;
+      rook_to = SQ_F1;
+    } else {
+      rook_from = SQ_A1;
+      rook_to = SQ_D1;
+    }
+
+    if (side_to_move == BLACK) {
+      // move to 8th rank for black castling
+      rook_from = rook_from + SQ_A8;
+      rook_to = rook_to + SQ_A8;
+    }
+    assert(!pieceOn(rook_to));
+    movePiece(rook_from, rook_to);
+  }
+
+  // update castling rights if king or rook moves
+  if (typeOf(piece) == KING) {
+    castling_rights &=
+        ~(side_to_move == WHITE ? WHITE_CASTLING : BLACK_CASTLING);
+  } else if (typeOf(piece) == ROOK) {
+    if (from == SQ_A1) {
+      castling_rights &= ~WHITE_OOO;
+    } else if (from == SQ_H1) {
+      castling_rights &= ~WHITE_OO;
+    } else if (from == SQ_A8) {
+      castling_rights &= ~BLACK_OOO;
+    } else if (from == SQ_H8) {
+      castling_rights &= ~BLACK_OO;
+    }
+  }
+
+  // update hash with new castling rights
+  hash ^= Zobrist::castling[old_cr] ^ Zobrist::castling[castling_rights];
 
   side_to_move = enemy;
   hash ^= Zobrist::side;
@@ -72,7 +149,8 @@ void Position::print() const {
   std::cout << "   a b c d e f g h\n\n";
   std::cout << "Side to move:      "
             << (side_to_move == WHITE ? "White" : "Black") << "\n";
-  std::cout << "Castling rights:   " << castlingToString(castling_rights)
+  std::cout << "Castling rights:   "
+            << castlingToString(static_cast<CastlingRights>(castling_rights))
             << '\n';
   std::cout << "En passant square: "
             << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << '\n';
@@ -186,7 +264,7 @@ std::string Position::fen() const {
   }
 
   ss << ' ' << (side_to_move == WHITE ? 'w' : 'b') << ' '
-     << castlingToString(castling_rights) << ' '
+     << castlingToString(static_cast<CastlingRights>(castling_rights)) << ' '
      << (ep_square == SQ_NONE ? "-" : squareToString(ep_square)) << ' '
      << halfmove_clock << ' ' << fullmove_count;
 
