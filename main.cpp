@@ -18,9 +18,11 @@ int moveGenerationTest(Position &pos, int depth) {
   int num_positions{};
   for (const Move move : moves) {
     StateInfo st{};
-    pos.makeMove(move, st);
-    num_positions += moveGenerationTest(pos, depth - 1);
-    pos.unmakeMove(move);
+    if (pos.isMoveLegal(move)) {
+      pos.makeMove(move, st);
+      num_positions += moveGenerationTest(pos, depth - 1);
+      pos.unmakeMove(move);
+    }
   }
   return num_positions;
 }
@@ -34,6 +36,6 @@ int main() {
   pos.set(fen, &st);
   pos.print();
 
-  std::cout << moveGenerationTest(pos, 5) << std::endl;
+  std::cout << moveGenerationTest(pos, 6) << std::endl;
   return 0;
 }

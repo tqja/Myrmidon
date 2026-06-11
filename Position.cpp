@@ -139,7 +139,7 @@ bool Position::isMoveLegal(const Move move) {
   Bitboard king{by_type[KING] & by_colour[ally]};
   const Square king_sq{popLsb(king)};
 
-  const bool legal{isSquareAttacked(king_sq, opposite(ally))};
+  const bool legal{!isSquareAttacked(king_sq, opposite(ally))};
   unmakeMove(move);
   return legal;
 }
