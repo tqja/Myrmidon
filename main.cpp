@@ -1,33 +1,39 @@
 #include "Attacks.h"
 #include "Move.h"
+#include "MoveGen.h"
 #include "Position.h"
 #include "Zobrist.h"
-#include "MoveGen.h"
+
+#include <vector>
+
+const std::string fen =
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+int moveGenerationTest(Position &pos, int depth) {
+  if (depth == 0) {
+    return 1;
+  }
+
+  const std::vector<Move> moves{generateMoves(pos)};
+  int num_positions{};
+  for (const Move move : moves) {
+    StateInfo st{};
+    pos.makeMove(move, st);
+    num_positions += moveGenerationTest(pos, depth - 1);
+    pos.unmakeMove(move);
+  }
+  return num_positions;
+}
 
 int main() {
   Attacks::init();
   Zobrist::init();
 
   Position pos{};
-  pos.set("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+  StateInfo st{};
+  pos.set(fen, &st);
   pos.print();
 
-  const std::vector<Move> moves{generateMoves(pos)};
-  std::cout << moves.size() << '\n';
-
-  int sq{SQ_A1};
-  std::string input{};
-  while (input != "x") {
-    std::cout << std::flush;
-    printBitboard(Attacks::rook_attacks(static_cast<Square>(sq), pos.getPieces()));
-    std::cout << "Square: " << sq << "\n";
-    std::cin >> input;
-    if (input == "b") {
-      sq = std::max(0, sq - 1);
-    } else {
-      sq = std::min(63, sq + 1);
-    }
-  }
-
+  std::cout << moveGenerationTest(pos, 5) << std::endl;
   return 0;
 }

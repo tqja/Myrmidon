@@ -9,12 +9,18 @@
 using Bitboard = std::uint64_t;
 using Key = std::uint64_t;
 
+constexpr int MAX_PLY{512};
+
 constexpr char piece_chars[2][7] = {
     {'P', 'N', 'B', 'R', 'Q', 'K', '.'}, // white
     {'p', 'n', 'b', 'r', 'q', 'k', '.'}, // black
 };
 
 enum Colour : std::uint8_t { WHITE, BLACK, COLOUR_NB };
+
+constexpr Colour operator~(const Colour cr) {
+  return static_cast<Colour>(~cr);
+}
 
 // clang-format off
 enum PieceType : std::uint8_t {
@@ -46,7 +52,7 @@ inline PieceType typeOf(const Piece p) {
 
 inline Piece typeToPiece(const Colour colour, const PieceType pt) {
   assert(pt != NO_PIECE_TYPE);
-  return static_cast<Piece>(static_cast<int>(pt) + static_cast<int>(colour) == WHITE ? 1 : 9);
+  return static_cast<Piece>(pt + (colour == WHITE ? 0 : 8) + 1);
 }
 
 inline PieceType charToPieceType(const unsigned char c) {
@@ -59,7 +65,7 @@ inline PieceType charToPieceType(const unsigned char c) {
     case 'k': return KING;
     default:
       std::cerr << c << " is not a valid piece type." << std::endl;
-      assert(false);
+      return NO_PIECE_TYPE;
     }
 }
 
@@ -110,12 +116,6 @@ inline Square popLsb(Bitboard &bitboard) {
   return sq;
 }
 
-inline std::string squareToString(const Square sq) {
-  char file = static_cast<char>('a' + (sq % 8));
-  char rank = static_cast<char>('1' + (sq / 8));
-  return {file, rank};
-}
-
 enum File : std::uint8_t {
   FILE_A,
   FILE_B,
@@ -140,8 +140,18 @@ enum Rank : std::uint8_t {
   RANK_NB
 };
 
-inline Square makeSquare(const File f, const Rank r) {
+inline File makeFile(Square sq) { return static_cast<File>(sq % 8); }
+
+inline Rank makeRank(Square sq) { return static_cast<Rank>(sq / 8); }
+
+inline Square makeSquare(const int f, const int r) {
   return static_cast<Square>(f + r * 8);
+}
+
+inline std::string squareToString(const Square sq) {
+  const char file{static_cast<char>('a' + makeFile(sq))};
+  const char rank{static_cast<char>('1' + makeRank(sq))};
+  return {file, rank};
 }
 
 #define ENABLE_INCR_OPERATORS_ON(T)                                            \
@@ -206,6 +216,11 @@ inline std::string castlingToString(const CastlingRights cr) {
   return result;
 }
 
+constexpr CastlingRights operator~(const CastlingRights cr) {
+  // mask lower 4 bits so upper bits don't get flipped
+  return static_cast<CastlingRights>(~static_cast<int>(cr) & 0xF);
+}
+
 constexpr CastlingRights operator|(const CastlingRights a,
                                    const CastlingRights b) {
   return static_cast<CastlingRights>(static_cast<int>(a) | static_cast<int>(b));
@@ -230,7 +245,7 @@ inline void printBitboard(const Bitboard bb) {
   for (int rank = 7; rank >= 0; --rank) {
     std::cout << rank + 1 << "  ";
     for (int file = 0; file < 8; ++file) {
-      const auto sq = static_cast<Square>(rank * 8 + file);
+      const Square sq{makeSquare(file, rank)};
       if (bb & (1ULL << sq))
         std::cout << "x ";
       else

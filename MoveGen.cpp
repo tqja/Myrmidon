@@ -43,14 +43,14 @@ static void generatePawnMoves(const Position &pos, std::vector<Move> &move_list,
     Bitboard capture_targets{Attacks::pawn_attacks[ally][from] & enemy_pieces};
     while (capture_targets) {
       const Square to{popLsb(capture_targets)};
-      if (to / 8 == promo_rank) {
+      if (makeRank(to) == promo_rank) {
         generatePromoCaptures(move_list, from, to);
       } else {
         move_list.emplace_back(from, to, CAPTURE);
       }
     }
 
-    const auto rank{static_cast<Rank>(from / 8)};
+    const auto rank{static_cast<Rank>(makeRank(from))};
     assert(!(ally == WHITE && rank == RANK_8) &&
            !(ally == BLACK && rank == RANK_1) &&
            "Invalid position: Pawn cannot exist on final rank");
@@ -191,8 +191,8 @@ static void generateCastlingMoves(const Position &pos,
       return;
     }
 
-    const bool can_castle_queenside = (cr & BLACK_OOO) && pos.empty(SQ_B8) && pos.empty(SQ_C8) &&
-                                      pos.empty(SQ_D8) &&
+    const bool can_castle_queenside = (cr & BLACK_OOO) && pos.empty(SQ_B8) &&
+                                      pos.empty(SQ_C8) && pos.empty(SQ_D8) &&
                                       !pos.isSquareAttacked(SQ_C8, enemy) &&
                                       !pos.isSquareAttacked(SQ_D8, enemy);
 

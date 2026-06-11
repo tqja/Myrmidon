@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 4.1)
 project(Myrmidon)
 
 set(CMAKE_CXX_STANDARD 26)
+set(CMAKE_BUILD_TYPE DEBUG)
 
 add_executable(Myrmidon main.cpp
         Position.cpp

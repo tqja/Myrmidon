@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include <cstdint>
+#include <vector>
+#include <sstream>
 
 enum MoveFlags : std::uint8_t {
   QUIET = 0,
@@ -61,5 +63,14 @@ public:
 private:
   std::uint16_t data{};
 };
+
+inline void printMoveList(const std::vector<Move>& moves) {
+  std::ostringstream ss;
+  ss << "Move list:\n";
+  for (Move move : moves) {
+    ss << squareToString(move.from()) << squareToString(move.to()) << ", ";
+  }
+  std::cout << ss.str();
+}
 
 #endif // CHESS_ENGINE_MOVE_H
