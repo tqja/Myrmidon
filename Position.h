@@ -10,8 +10,8 @@ struct StateInfo {
   Square ep_square;
   CastlingRights castling_rights;
   int halfmove_clock;
-
   Key hash;
+
   Piece captured;
   StateInfo* previous;
 };
@@ -49,6 +49,7 @@ public:
   Square getEp() const { return st->ep_square; }
 
   bool isSquareAttacked(Square sq, Colour attacker) const;
+  bool kingLeftInCheck() const;
 
   inline Piece pieceOn(const Square square) const {
     assert(0 <= square && square < SQ_NB && "Square out of bounds");
@@ -68,7 +69,7 @@ private:
   void movePiece(Square from, Square to);
 
   void setHalfmoveClock(Move move, const Piece piece);
-  void removeEnemyCastleRightsOnCapture(Square to);
+  void removeEnemyCastleRightsOnCapture(Square to, Colour enemy);
   std::pair<Square, Square> getRookCastlingSquares(Move move);
   void updateCastlingRights(Piece piece, Square rook_sq);
 };

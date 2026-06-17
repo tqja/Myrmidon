@@ -59,7 +59,8 @@ static void generatePawnMoves(const Position &pos, std::vector<Move> &move_list,
     if (!pos.empty(single_push))
       continue;
 
-    if (rank + push_direction == promo_rank) {
+    const Rank push_rank{static_cast<Rank>(rank + (push_direction / 8))};
+    if (push_rank == promo_rank) {
       generatePromos(move_list, from, single_push);
     } else {
       move_list.emplace_back(from, single_push, QUIET);

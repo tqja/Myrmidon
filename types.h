@@ -107,8 +107,8 @@ constexpr Square &operator+=(Square &lhs, const Square rhs) {
   return lhs = lhs + rhs;
 }
 
-constexpr Bitboard rook_start{(1ULL << SQ_A1) | (1ULL << SQ_A8) |
-                              (1ULL << SQ_H1) | (1ULL << SQ_H8)};
+constexpr Bitboard rook_start_white{(1ULL << SQ_A1) | (1ULL << SQ_H1)};
+constexpr Bitboard rook_start_black{(1ULL << SQ_A8) | (1ULL << SQ_H8)};
 
 inline Square popLsb(Bitboard &bitboard) {
   const auto sq = static_cast<Square>(__builtin_ctzll(bitboard));

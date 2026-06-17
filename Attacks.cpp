@@ -15,7 +15,7 @@ std::array<std::array<Bitboard, 512>, SQ_NB> bishop_table{};
 static Bitboard initWhitePawnAttacks(const Square sq, const Rank rank,
                                      const File file) {
   Bitboard pawn_bb{};
-  if (RANK_1 < rank && rank < RANK_8) {
+  if (RANK_1 <= rank && rank <= RANK_8) {
     if (file > FILE_A) {
       pawn_bb |= 1ULL << (sq + static_cast<int>(NORTH_WEST));
     }
@@ -29,7 +29,7 @@ static Bitboard initWhitePawnAttacks(const Square sq, const Rank rank,
 static Bitboard initBlackPawnAttacks(const Square sq, const Rank rank,
                                      const File file) {
   Bitboard pawn_bb{};
-  if (RANK_1 < rank && rank < RANK_8) {
+  if (RANK_1 <= rank && rank <= RANK_8) {
     if (file > FILE_A) {
       pawn_bb |= 1ULL << (sq + static_cast<int>(SOUTH_WEST));
     }

@@ -1,31 +1,10 @@
 #include "Attacks.h"
-#include "Move.h"
-#include "MoveGen.h"
 #include "Position.h"
 #include "Zobrist.h"
-
-#include <vector>
+#include "perft.h"
 
 const std::string fen =
-    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-int moveGenerationTest(Position &pos, int depth) {
-  if (depth == 0) {
-    return 1;
-  }
-
-  const std::vector<Move> moves{generateMoves(pos)};
-  int num_positions{};
-  for (const Move move : moves) {
-    StateInfo st{};
-    if (pos.isMoveLegal(move)) {
-      pos.makeMove(move, st);
-      num_positions += moveGenerationTest(pos, depth - 1);
-      pos.unmakeMove(move);
-    }
-  }
-  return num_positions;
-}
+    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 ";
 
 int main() {
   Attacks::init();
@@ -36,6 +15,7 @@ int main() {
   pos.set(fen, &st);
   pos.print();
 
-  std::cout << moveGenerationTest(pos, 6) << std::endl;
+  std::cout << perft(pos, 4) << '\n';
+
   return 0;
 }

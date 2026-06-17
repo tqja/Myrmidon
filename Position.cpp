@@ -11,7 +11,7 @@
 
 void Position::makeMove(const Move move, StateInfo &new_st) {
   // copy board state to history
-  std::memcpy(&new_st, st, offsetof(StateInfo, hash));
+  std::memcpy(&new_st, st, offsetof(StateInfo, captured));
   new_st.previous = st;
   st = &new_st;
 
@@ -27,7 +27,7 @@ void Position::makeMove(const Move move, StateInfo &new_st) {
   setHalfmoveClock(move, piece);
 
   if (move.isCapture() && !move.isEnPassant()) {
-    removeEnemyCastleRightsOnCapture(to);
+    removeEnemyCastleRightsOnCapture(to, enemy);
     st->captured = pieceOn(to);
     removePiece(to);
   }
@@ -124,22 +124,24 @@ bool Position::isSquareAttacked(const Square sq, const Colour attacker) const {
   const Bitboard queens = getPieces(QUEEN, attacker);
   const Bitboard kings = getPieces(KING, attacker);
 
-  return (Attacks::pawn_attacks[attacker][sq] & pawns) ||
+  return (Attacks::pawn_attacks[opposite(attacker)][sq] & pawns) ||
          (Attacks::knight_attacks[sq] & knights) ||
          (Attacks::bishop_attacks(sq, occupancy) & (bishops | queens)) ||
          (Attacks::rook_attacks(sq, occupancy) & (rooks | queens)) ||
          (Attacks::king_attacks[sq] & kings);
 }
 
+bool Position::kingLeftInCheck() const {
+  // invert colour as this function is called after the move to check is made
+  Bitboard king{by_type[KING] & by_colour[opposite(side_to_move)]};
+  const Square king_sq{popLsb(king)};
+  return isSquareAttacked(king_sq, side_to_move);
+}
+
 bool Position::isMoveLegal(const Move move) {
-  const Colour ally{side_to_move};
   StateInfo st{};
   makeMove(move, st);
-
-  Bitboard king{by_type[KING] & by_colour[ally]};
-  const Square king_sq{popLsb(king)};
-
-  const bool legal{!isSquareAttacked(king_sq, opposite(ally))};
+  const bool legal{!kingLeftInCheck()};
   unmakeMove(move);
   return legal;
 }
@@ -328,7 +330,7 @@ void Position::movePiece(const Square from, const Square to) {
   const Piece piece{board[from]};
   if (piece == NO_PIECE) {
     print();
-  } 
+  }
   assert(piece != NO_PIECE);
   removePiece(from);
   addPiece(piece, to);
@@ -342,18 +344,23 @@ void Position::setHalfmoveClock(const Move move, const Piece piece) {
   }
 }
 
-void Position::removeEnemyCastleRightsOnCapture(const Square rook_sq) {
+void Position::removeEnemyCastleRightsOnCapture(const Square rook_sq,
+                                                const Colour enemy) {
+  const Bitboard rook_start{enemy == WHITE ? rook_start_white
+                                           : rook_start_black};
   const bool rook_on_start_square{
       static_cast<bool>((1ULL << rook_sq) & rook_start)};
 
+  st->hash ^= Zobrist::castling[st->castling_rights];
   if (typeOf(pieceOn(rook_sq)) == ROOK && rook_on_start_square) {
-    const int file{makeFile(rook_sq)};
-    if (file == FILE_A) { // queenside
+    const bool queenside{makeFile(rook_sq) == FILE_A};
+    if (queenside) {
       st->castling_rights &= ~(side_to_move == WHITE ? BLACK_OOO : WHITE_OOO);
-    } else { // kingside
+    } else {
       st->castling_rights &= ~(side_to_move == WHITE ? BLACK_OO : WHITE_OO);
     }
   }
+  st->hash ^= Zobrist::castling[st->castling_rights];
 }
 
 std::pair<Square, Square> Position::getRookCastlingSquares(const Move move) {

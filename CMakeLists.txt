@@ -15,6 +15,7 @@ add_executable(Myrmidon main.cpp
         Attacks.h
         MoveGen.cpp
         MoveGen.h
+        perft.h
 )
 
 # required for _pext_u64
