@@ -10,7 +10,6 @@
 #include <sstream>
 
 void Position::makeMove(const Move move, StateInfo &new_st) {
-  // copy board state to history
   std::memcpy(&new_st, st, offsetof(StateInfo, captured));
   new_st.previous = st;
   st = &new_st;
@@ -132,7 +131,6 @@ bool Position::isSquareAttacked(const Square sq, const Colour attacker) const {
 }
 
 bool Position::kingLeftInCheck() const {
-  // invert colour as this function is called after the move to check is made
   Bitboard king{by_type[KING] & by_colour[opposite(side_to_move)]};
   const Square king_sq{popLsb(king)};
   return isSquareAttacked(king_sq, side_to_move);
